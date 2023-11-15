@@ -58,6 +58,7 @@ class CoreMonitor(PHALPlugin):
             try:
                 with open(self._save_path) as f:
                     self._metrics = json.load(f)
+                LOG.info(f"Loaded metrics from {self._save_path}")
             except Exception as e:
                 LOG.exception(f"Failed to load {self._save_path}: {e}")
                 remove(self._save_path)
@@ -89,9 +90,11 @@ class CoreMonitor(PHALPlugin):
         except Exception as e:
             LOG.error(e)
             return
+        LOG.debug(f"Got metric: {metric_name}")
         self._metrics.setdefault(metric_name, list())
         self._metrics[metric_name].append(NeonMetric(metric_name, timestamp,
                                                      metric_data))
+        # TODO: Support backends like InfluxDb
         if self.upload_enabled:
             report_metric(name=metric_name, timestamp=timestamp, **metric_data)
 
@@ -99,4 +102,5 @@ class CoreMonitor(PHALPlugin):
         if self.save_local:
             with open(self._save_path, 'w+') as f:
                 json.dump(self._metrics, f)
+            LOG.info(f"Wrote metrics to {self._save_path}")
         PHALPlugin.shutdown(self)

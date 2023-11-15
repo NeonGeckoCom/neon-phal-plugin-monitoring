@@ -23,8 +23,7 @@ Record an arbitrary metric by emitting:
 msg_type: neon.metric
 data: 
   name: Metric name/type
-  # Add any data that will be collected as part of this metric
-context:
   timestamp: Optional timestamp metric was collected (float epoch time)
+  # Add any data that will be collected as part of this metric
 ```
 
