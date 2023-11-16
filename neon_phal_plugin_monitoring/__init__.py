@@ -28,13 +28,13 @@
 
 import json
 
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from os import remove
 from os.path import join, isfile
 from time import time
 from ovos_bus_client.message import Message
 from ovos_utils.log import LOG
-from ovos_utils.xdg_utils import xdg_state_home
+from ovos_utils.xdg_utils import xdg_data_home
 from ovos_config.meta import get_xdg_base
 from ovos_plugin_manager.phal import PHALPlugin
 from neon_utils.metrics_utils import report_metric
@@ -52,7 +52,7 @@ class CoreMonitor(PHALPlugin):
                  config=None):
         PHALPlugin.__init__(self, bus, name, config)
         self._metrics = dict()
-        self._save_path = join(xdg_state_home(), get_xdg_base(),
+        self._save_path = join(xdg_data_home(), get_xdg_base(),
                                "core_metrics.json")
         if self.save_local and isfile(self._save_path):
             try:
@@ -91,12 +91,12 @@ class CoreMonitor(PHALPlugin):
             LOG.error(e)
             return
         LOG.debug(f"Got metric: {metric_name}")
-        self._metrics.setdefault(metric_name, list())
-        self._metrics[metric_name].append(NeonMetric(metric_name, timestamp,
-                                                     metric_data))
+        metric = NeonMetric(metric_name, timestamp, metric_data)
+        self._metrics.setdefault(metric.name, list())
+        self._metrics[metric_name].append(asdict(metric))
         # TODO: Support backends like InfluxDb
         if self.upload_enabled:
-            report_metric(name=metric_name, timestamp=timestamp, **metric_data)
+            report_metric(**asdict(metric))
 
     def _write_to_disk(self):
         with open(self._save_path, 'w+') as f:
