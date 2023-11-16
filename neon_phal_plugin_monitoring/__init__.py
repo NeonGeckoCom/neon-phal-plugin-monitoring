@@ -97,9 +97,6 @@ class CoreMonitor(PHALPlugin):
         # TODO: Support backends like InfluxDb
         if self.upload_enabled:
             report_metric(name=metric_name, timestamp=timestamp, **metric_data)
-        if self.save_local:
-            # TODO: This is excessive, do this on clean exit or on a schedule
-            self._write_to_disk()
 
     def _write_to_disk(self):
         with open(self._save_path, 'w+') as f:
