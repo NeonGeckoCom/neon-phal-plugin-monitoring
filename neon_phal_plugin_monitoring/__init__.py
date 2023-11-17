@@ -92,7 +92,7 @@ class CoreMonitor(PHALPlugin):
         Handle a metric reported on the messagebus
         @param message: `neon.metric` Message
         """
-        metric_data = message.data
+        metric_data = dict(message.data)
         try:
             metric_name = metric_data.pop("name")
             timestamp = message.context.get("timestamp") or time()
@@ -120,7 +120,8 @@ class CoreMonitor(PHALPlugin):
         elif not request:
             resp = message.response({"error": False, **self._metrics})
         else:
-            resp = message.response({"error": False, **self._metrics[request]})
+            resp = message.response({"error": False,
+                                     request: self._metrics[request]})
         self.bus.emit(resp)
 
     def get_metric(self, message: Message):
