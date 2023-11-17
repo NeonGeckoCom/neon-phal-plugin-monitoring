@@ -63,6 +63,7 @@ class CoreMonitor(PHALPlugin):
                 LOG.exception(f"Failed to load {self._save_path}: {e}")
                 remove(self._save_path)
         self.bus.on("neon.metric", self.on_metric)
+        self.bus.on("neon.get_metric", self.get_metric)
         self.bus.on("neon.get_raw_metric", self.get_raw_metric)
 
     @property
@@ -129,6 +130,7 @@ class CoreMonitor(PHALPlugin):
                                      "message": f"{request} not found in "
                                                 f"{self._metrics.keys()}"})
         else:
+            LOG.debug(f"Generating response for metric: {request}")
             try:
                 data = self._metrics[request]
                 flattened_lists = {}
@@ -152,6 +154,7 @@ class CoreMonitor(PHALPlugin):
                 resp = message.response({"error": True,
                                          "message": repr(e)})
         self.bus.emit(resp)
+        LOG.debug(f"Sent response: {resp.msg_type}")
 
     def _write_to_disk(self):
         with open(self._save_path, 'w+') as f:
