@@ -167,6 +167,10 @@ class CoreMonitor(PHALPlugin):
         LOG.debug(f"Sent response: {resp.msg_type}")
 
     def _write_to_disk(self):
+        # Truncate metrics to maximum configured length
+        for name, metric in self._metrics.items():
+            self._metrics[name] = metric[-self.max_num_history:]
+        # Write metrics to disk
         with open(self._save_path, 'w+') as f:
             json.dump(self._metrics, f)
         LOG.info(f"Wrote metrics to {self._save_path}")
