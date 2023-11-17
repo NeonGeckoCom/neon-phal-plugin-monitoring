@@ -74,6 +74,13 @@ class CoreMonitor(PHALPlugin):
         return self.config.get("save_locally") is not False
 
     @property
+    def max_num_history(self) -> int:
+        """
+        Get a maximum number of datapoints to handle in data parsing
+        """
+        return self.config.get("max_history") or 100
+
+    @property
     def upload_enabled(self) -> bool:
         """
         Allow uploading collected metrics to a remote MQ server, default False
@@ -132,7 +139,10 @@ class CoreMonitor(PHALPlugin):
         else:
             LOG.debug(f"Generating response for metric: {request}")
             try:
-                data = self._metrics[request]
+                data: list = self._metrics[request]
+                if len(data) > self.max_num_history:
+                    LOG.info(f"Truncating data to {self.max_num_history} items")
+                    data = data[-self.max_num_history:]
                 flattened_lists = {}
                 metrics = (d['data'] for d in data)
                 for metric in metrics:
