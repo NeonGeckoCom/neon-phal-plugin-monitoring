@@ -28,9 +28,18 @@ data:
 ```
 
 ### Get Metric
-Get collected metrics:
+Get processed data for a collected metric.
 ```yaml
 msg_type: neon.get_metric
+data:
+  name: Metric name/type (required)
+```
+
+### Get Raw Metric
+Get raw data for collected metrics. This will return a list of dict data for the
+requested metric (dict of metric name to list dict data if no metric requested).
+```yaml
+msg_type: neon.get_raw_metric
 data:
   name: Metric name/type (or None to get all metrics)
 ```

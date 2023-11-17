@@ -63,7 +63,7 @@ class CoreMonitor(PHALPlugin):
                 LOG.exception(f"Failed to load {self._save_path}: {e}")
                 remove(self._save_path)
         self.bus.on("neon.metric", self.on_metric)
-        self.bus.on("neon.get_metric", self.get_metric)
+        self.bus.on("neon.get_raw_metric", self.get_raw_metric)
 
     @property
     def save_local(self) -> bool:
@@ -99,10 +99,10 @@ class CoreMonitor(PHALPlugin):
         if self.upload_enabled:
             report_metric(**asdict(metric))
 
-    def get_metric(self, message: Message):
+    def get_raw_metric(self, message: Message):
         """
         Get values for the requested metric and emit them as a response
-        @param message: `neon.get_metric` Message
+        @param message: `neon.get_raw_metric` Message
         """
         request = message.data.get("name")
         if request and request not in self._metrics:
@@ -113,6 +113,44 @@ class CoreMonitor(PHALPlugin):
             resp = message.response({"error": False, **self._metrics})
         else:
             resp = message.response({"error": False, **self._metrics[request]})
+        self.bus.emit(resp)
+
+    def get_metric(self, message: Message):
+        """
+        Get parsed data for the requested metric
+        @param message: `neon.get_metric` Message
+        """
+        request = message.data.get("name")
+        if not request:
+            resp = message.response({"error": True,
+                                     "message": "A metric `name` is required"})
+        elif request not in self._metrics:
+            resp = message.response({"error": True,
+                                     "message": f"{request} not found in "
+                                                f"{self._metrics.keys()}"})
+        else:
+            try:
+                data = self._metrics[request]
+                flattened_lists = {}
+                metrics = (d['data'] for d in data)
+                for metric in metrics:
+                    for key, val in metric.items():
+                        if isinstance(val, dict):
+                            for k, v in val.items():
+                                flattened_lists.setdefault(f"{key}.{k}", list())
+                                flattened_lists[f"{key}.{k}"].append(v)
+                        else:
+                            flattened_lists.setdefault(key, list())
+                            flattened_lists[key].append(val)
+                parsed_data = {k: {"min": min(v),
+                                   "max": max(v),
+                                   "avg": sum(v)/len(v)}
+                               for k, v in flattened_lists.items()}
+                resp = message.response({"error": False, **parsed_data})
+            except Exception as e:
+                LOG.exception(e)
+                resp = message.response({"error": True,
+                                         "message": repr(e)})
         self.bus.emit(resp)
 
     def _write_to_disk(self):
