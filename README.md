@@ -27,3 +27,10 @@ data:
   # Add any data that will be collected as part of this metric
 ```
 
+### Get Metric
+Get collected metrics:
+```yaml
+msg_type: neon.get_metric
+data:
+  name: Metric name/type (or None to get all metrics)
+```

@@ -63,6 +63,7 @@ class CoreMonitor(PHALPlugin):
                 LOG.exception(f"Failed to load {self._save_path}: {e}")
                 remove(self._save_path)
         self.bus.on("neon.metric", self.on_metric)
+        self.bus.on("neon.get_metric", self.get_metric)
 
     @property
     def save_local(self) -> bool:
@@ -90,13 +91,29 @@ class CoreMonitor(PHALPlugin):
         except Exception as e:
             LOG.error(e)
             return
-        LOG.debug(f"Got metric: {metric_name}")
         metric = NeonMetric(metric_name, timestamp, metric_data)
+        LOG.debug(f"Got metric: {metric}")
         self._metrics.setdefault(metric.name, list())
         self._metrics[metric_name].append(asdict(metric))
         # TODO: Support backends like InfluxDb
         if self.upload_enabled:
             report_metric(**asdict(metric))
+
+    def get_metric(self, message: Message):
+        """
+        Get values for the requested metric and emit them as a response
+        @param message: `neon.get_metric` Message
+        """
+        request = message.data.get("name")
+        if request and request not in self._metrics:
+            resp = message.response({"error": True,
+                                     "message": f"{request} not found in "
+                                                f"{self._metrics.keys()}"})
+        elif not request:
+            resp = message.response({"error": False, **self._metrics})
+        else:
+            resp = message.response({"error": False, **self._metrics[request]})
+        self.bus.emit(resp)
 
     def _write_to_disk(self):
         with open(self._save_path, 'w+') as f:
