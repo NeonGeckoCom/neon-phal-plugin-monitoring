@@ -1,12 +1,20 @@
 # Changelog
 
-## [0.0.2a1](https://github.com/NeonGeckoCom/neon-phal-plugin-monitoring/tree/0.0.2a1) (2024-04-08)
+## [0.0.3a2](https://github.com/NeonGeckoCom/neon-phal-plugin-monitoring/tree/0.0.3a2) (2025-03-14)
 
-[Full Changelog](https://github.com/NeonGeckoCom/neon-phal-plugin-monitoring/compare/0.0.1...0.0.2a1)
+[Full Changelog](https://github.com/NeonGeckoCom/neon-phal-plugin-monitoring/compare/0.0.3a1...0.0.3a2)
 
 **Merged pull requests:**
 
-- Update ovos-utils to allow 0.X versions [\#3](https://github.com/NeonGeckoCom/neon-phal-plugin-monitoring/pull/3) ([NeonDaniel](https://github.com/NeonDaniel))
+- Update Github Actions and License notices [\#6](https://github.com/NeonGeckoCom/neon-phal-plugin-monitoring/pull/6) ([NeonDaniel](https://github.com/NeonDaniel))
+
+## [0.0.3a1](https://github.com/NeonGeckoCom/neon-phal-plugin-monitoring/tree/0.0.3a1) (2024-09-19)
+
+[Full Changelog](https://github.com/NeonGeckoCom/neon-phal-plugin-monitoring/compare/0.0.2...0.0.3a1)
+
+**Merged pull requests:**
+
+- Update dependencies to allow OVOS 0.x dependency resolution [\#5](https://github.com/NeonGeckoCom/neon-phal-plugin-monitoring/pull/5) ([NeonDaniel](https://github.com/NeonDaniel))
 
 
 
